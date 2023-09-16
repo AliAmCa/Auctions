@@ -1,0 +1,21 @@
+{% extends "auctions/layout.html" %}
+
+{% block body %}
+    <h2 class="mt-5 text-center">Active Listings</h2>
+
+    TODO
+    <div class="container ">
+        {% for item in products %}
+            <div class="card">
+                <img src="" alt="" class="card-img">
+                <div class="card-body">
+                    <p>{{ item.name }}</p>
+                    <p>Price: ${{ item.price }} </p>
+                    <a href="{% url 'item' item.id %}"> Info </a>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+
+
+{% endblock %}
