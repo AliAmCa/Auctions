@@ -1,3 +1,4 @@
+from datetime import datetime
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.db import IntegrityError
@@ -5,6 +6,7 @@ from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import render, redirect
 from django.urls import reverse
 from .models import Product
+from .forms  import NewProductForm
 
 from .models import User
 
@@ -68,12 +70,31 @@ def register(request):
     
 @login_required
 def newProduct(request):
+    print(datetime.now())
     if request.method == 'POST':
-        title = request.POST['title']
-        description = request.POST['description']
-        startBid = request.POST['startBid']
-        image = request.POST['imageURL']
-        category = request.POST['category']
-        seller = request.user
-        
+        newProductForm = NewProductForm()
+
+        try:
+            title = request.POST['title']
+            description = request.POST['description']
+            startBid = float(request.POST['initialPrice'])
+            image = request.POST['image']
+            category = request.POST['category']
+            seller = User.objects.get(username= request.user)
+            today = datetime.now()
+            product = Product(name= title, description= description, 
+                    price= startBid, image = image, category= category,
+                    seller = seller, date = today)
+            product.save()
+            return HttpResponseRedirect(reverse("index"))
+        except Exception as e:
+            print(e)
+            return render(request, "auctions/createListing.html",{
+            'new_product_form': newProductForm
+        })
+    else:
+        newProductForm = NewProductForm()
+        return render(request, "auctions/createListing.html",{
+            'new_product_form': newProductForm
+        })
 

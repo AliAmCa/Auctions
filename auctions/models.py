@@ -6,15 +6,15 @@ class User(AbstractUser):
     pass
 
 
-class Category(models.Model):
-    name = models.CharField(max_length=64)
+
 
 class Product(models.Model):
     name = models.CharField(max_length=64)
+    description = models.CharField(max_length=200, null = True)
     price = models.FloatField()
     date = models.DateField()
     image = models.CharField(max_length=64, default="")
-    category = models.ForeignKey(Category, on_delete= models.CASCADE, related_name="productos", null=True)
+    category = models.CharField(max_length=30, null = True)
     seller = models.ForeignKey(User, on_delete= models.CASCADE, related_name="productos" )
     def __str__(self) -> str:
         return f"{self.name} - Price: ${self.price}"
