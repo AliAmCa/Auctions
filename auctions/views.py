@@ -70,7 +70,6 @@ def register(request):
     
 @login_required
 def newProduct(request):
-    print(datetime.now())
     if request.method == 'POST':
         newProductForm = NewProductForm()
 
@@ -97,4 +96,12 @@ def newProduct(request):
         return render(request, "auctions/createListing.html",{
             'new_product_form': newProductForm
         })
+    
+def showListing(request, listing_id):
+    listing = Product.objects.get(pk= listing_id)
+    
+    return render(request,"auctions/listingPage.html",{
+        "listing": listing
+    } )
+    
 
