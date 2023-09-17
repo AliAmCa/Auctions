@@ -42,38 +42,113 @@
                 {% endif %}
             </div>
 
-        </div> 
-        <!-- !ROW -->
-        <div class="row mt-5 text-center justify-content-around border border-info p-3">
-            <div class="col-md-4 text-center">
-                {% if item_bids %}
-                    {% for bid  in item_bids %}
-                   
-                    <div class="list-group">
-                        <a href="#" class="list-group-item list-group-item-action " aria-current="true">
-                          <div class="d-flex w-100 justify-content-between">
-                            <h5 class="mb-1">${{ bid.bid }}</h5>
-                            <small>{{ bid.date }}</small>
-                          </div>
-                          
-                        </a>
+        </div> <!-- //ROW -->
+        
+        <!-- BIDS -->
+        {% if listing.active %}  
+            <h1 class="text-center mt-5">Bids</h1>
+            
+          
+            <div class="row  text-center justify-content-around border border-info p-3">
+                <div class="col-md-4 text-center">
+                    {% if item_bids %}
+                        {% for bid  in item_bids %}
+                    
+                        <div class="list-group">
+                            <a href="#" class="list-group-item list-group-item-action " aria-current="true">
+                            <div class="d-flex w-100 justify-content-between">
+                                <h5 class="mb-1">${{ bid.bid }}</h5>
+                                <small>{{ bid.date }}</small>
+                            </div>
+                            
+                            </a>
+                        
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        
+                        <p>No current bids</p>
+                    {% endif %}
+                </div>
+                
+                
+                <form action="{% url 'newBid' listing.id %}" method="post" class="input-group mb-3 col-md-2 col-lg-4  text-center ">
+                    {% csrf_token %}
+
+                    <span class="input-group-text " style="height: fit-content;">$</span>
+                    <input id="bidAmount" name="bidAmount" type="number" class="form-control" placeholder="Amount" min="{{ mayor_bid  }}" step="0.1">
+                    <button id="bidSubmit" name="bidSubmit" type="submit" class="btn btn-success ml-3" style="height: fit-content;">Make a bid</button>
+                </form>
+            </div>
+        {% else %}
+            <div class="row mt-5 text-center justify-content-around  p-3">
+
+                <div class="col">
+                    {% if user_winner %}
+                        <div class="alert alert-primary" role="alert">
+                            You are the winner!
+                        </div>
+                    {% else %}
+                        <div class="alert alert-dark" role="alert">
+                            Sorry, this auction is closed!
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        {% endif %}
+        <!-- //BIDS -->
+
+        <!-- COMMENTS -->
+        <h1 class="text-center mt-5">Comments</h1>
+<hr>
+        <div class="row mt-6 text-center justify-content-center  p-3">
+            <div class=" text-center">
+                {% if comments %}
+                    <ul class="list-group">
+                        {% for comment in comments %} 
+                            <li class="list-group-item row">
+                                <div class="col">
+                                    <p>{{ comment.author.username }}</p>
+                                </div>
+                                <div class="col">
+                                    <p>{{ comment.comment }}</p>
+                                </div>
+
+                            </li>
+                        {% endfor %}
+                    </ul> 
+                {% else %}  
+                    <div class="row">
+                        <div class="alert alert-primary d-flex align-items-center" role="alert">
+                            <p style="margin-bottom: 0;">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-info-octagon-filled" width="44" height="44" viewBox="0 0 24 24" stroke-width="1.5" stroke="#dc135f" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                    <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                    <path d="M14.897 1a4 4 0 0 1 2.664 1.016l.165 .156l4.1 4.1a4 4 0 0 1 1.168 2.605l.006 .227v5.794a4 4 0 0 1 -1.016 2.664l-.156 .165l-4.1 4.1a4 4 0 0 1 -2.603 1.168l-.227 .006h-5.795a3.999 3.999 0 0 1 -2.664 -1.017l-.165 -.156l-4.1 -4.1a4 4 0 0 1 -1.168 -2.604l-.006 -.227v-5.794a4 4 0 0 1 1.016 -2.664l.156 -.165l4.1 -4.1a4 4 0 0 1 2.605 -1.168l.227 -.006h5.793zm-2.897 10h-1l-.117 .007a1 1 0 0 0 0 1.986l.117 .007v3l.007 .117a1 1 0 0 0 .876 .876l.117 .007h1l.117 -.007a1 1 0 0 0 .876 -.876l.007 -.117l-.007 -.117a1 1 0 0 0 -.764 -.857l-.112 -.02l-.117 -.006v-3l-.007 -.117a1 1 0 0 0 -.876 -.876l-.117 -.007zm.01 -3l-.127 .007a1 1 0 0 0 0 1.986l.117 .007l.127 -.007a1 1 0 0 0 0 -1.986l-.117 -.007z" stroke-width="0" fill="currentColor" />
+                                </svg>                            
+                                No comments yet. You're welcome to leave one  
+                                
+                            </p>
+                        </div>
                        
-                    </div>
-                    {% endfor %}
-                {% else %}
-                    <p>No current bids</p>
+                    </div>     
                 {% endif %}
             </div>
-            
-            
-            <form action="{% url 'newBid' listing.id %}" method="post" class="input-group mb-3 col-md-2 col-lg-4  text-center ">
+        </div>
+        <div class="row text-center justify-content-center m">  
+            {% if user.is_authenticated %}
+            <form action="{% url 'newComment' listing.id %}" method="post" class="col input-group-text mb-3  text-center ">
                 {% csrf_token %}
 
-                <span class="input-group-text " style="height: fit-content;">$</span>
-                <input id="bidAmount" name="bidAmount" type="number" class="form-control" placeholder="Amount" min="{{ mayor_bid  }}">
-                <button id="bidSubmit" name="bidSubmit" type="submit" class="btn btn-success ml-3" style="height: fit-content;">Make a bid</button>
+                <textarea class="form-control" aria-label="With textarea" placeholder="Your comment here" maxlength="200"></textarea>                    
+                <button id="commentSubmit" name="commentSubmit" type="submit" class="btn btn-info ml-3" style="height: fit-content;">Leave a comment</button>
             </form>
+            {% else %}  
+                Sign in to leave a comment
+            {% endif %}
+
         </div>
+
+
 
    </main>
    {% endif %}

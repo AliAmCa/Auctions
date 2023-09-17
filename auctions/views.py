@@ -98,48 +98,68 @@ def newProduct(request):
     
 def showListing(request, listing_id):
     message = ''
-    try:
-        user =  User.objects.get(username= request.user)
-        # Taking listing info
-        listing = Product.objects.get(pk= listing_id)
-        is_owner = False
-        # Is user the seller?
-        if user.pk == listing.seller.pk:
-            is_owner = True
+    item_in_watchlist= None
+    user_is_winner = False
+    is_owner = False
 
-        # Is the listing included in user's watchlist?
+    try:
+         # Taking listing info
+        listing = Product.objects.get(pk= listing_id)
+        mayor_bid = listing.price
+
         try:
-            watchlist = WatchList.objects.get(owner = user)
-            item_in_watchlist = watchlist.listings.filter(pk= listing.pk)
+            user =  User.objects.get(username= request.user)
+            
+             # Is user the seller?
+            if user.pk == listing.seller.pk:
+                is_owner = True
+
+            # Is the listing included in user's watchlist?
+            try:
+                watchlist = WatchList.objects.get(owner = user)
+                item_in_watchlist = watchlist.listings.filter(pk= listing.pk)
+            except:
+                watchlist = None
         except:
-            watchlist = None
-            item_in_watchlist= None
+            user = None
+
+       
+       
+        
+        # IF Listing is ACTIVE 
+        if listing.active:
+            # Taking bids info
+            bids = Bid.objects.filter(product= listing).order_by('-bid')
+            
+            if bids:
+                mayor_bid = bids[0].bid
+        else:
+            bids = None
+            # user is winner?
+            if user and listing.winner and user.id == listing.winner.id:
+                user_is_winner= True
+
     except Exception as e:
-        message = e
+        print(e)
         return render(request,"auctions/listingPage.html",{
-                "message": message
+                "message": "There is a problem with database, try again i a few minutes"
             })
 
-    # Taking bids info
-    
-    bids = Bid.objects.filter(product= listing).order_by('-bid')
-    mayor_bid = listing.price
-    if bids:
-        mayor_bid = bids[0].bid
 
     if request.method == 'GET':
         
         return render(request,"auctions/listingPage.html",{
             "listing": listing,
             "item_in_watchlist": item_in_watchlist,
-            "mayor_bid": mayor_bid+0.1, 
+            "mayor_bid": mayor_bid, 
             "item_bids": bids,
             "is_owner": is_owner,
+            "user_winner": user_is_winner,
             "message": message
 
         } )
     else:
-        if 'addToWatchlist' in request.POST:
+        if 'addToWatchlist' in request.POST: # Add the listing to user´s watchlist
             if watchlist:
                 watchlist.listings.add(listing) 
             else:
@@ -149,12 +169,12 @@ def showListing(request, listing_id):
                 watchlist.save()
             return HttpResponseRedirect(reverse("listing", args=[listing_id]))
             
-        if 'removeFWatchlist' in request.POST:
+        if 'removeFWatchlist' in request.POST: # Remove listing from user´s watchlist
             watchlist.listings.remove(listing)
             return HttpResponseRedirect(reverse("listing", args=[listing_id]))
         
-        if 'closeAuction' in request.POST:
-            # Closing auction
+        if 'closeAuction' in request.POST:  # Closing auction
+           
             # make the highest bidder the winner of the auction 
             # makes the listing no longer active
             listing.closeAuction()
@@ -171,16 +191,18 @@ def newBid (request, listing_id):
         
             bidAmount = float(request.POST["bidAmount"])
             isvalid = False
-            mayor_bid = listing.mayorBid()
-            if mayor_bid and bidAmount > mayor_bid or bidAmount > listing.price:
+            mayor_bid = listing.mayorBid().bid
+            if mayor_bid and bidAmount > mayor_bid or bidAmount >= listing.price:
                 isvalid= True
             if isvalid:
                 # Create nuevo bid
                 newBid = Bid(user= user, product = listing, bid = bidAmount, date= datetime.now())
                 newBid.save()
-                return HttpResponseRedirect(reverse("listing", args=listing_id))
+                return HttpResponseRedirect(reverse("listing", args=[listing_id]))
             
             
         except Exception as e:
             return HttpResponseRedirect(reverse("listing", args=[listing_id]))
 
+def newComment(request, listing_id):
+    pass
