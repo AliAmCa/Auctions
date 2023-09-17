@@ -1,5 +1,6 @@
 from django.contrib.auth.models import AbstractUser
 from django.db import models
+from datetime import datetime
 
 
 class User(AbstractUser):
@@ -15,9 +16,29 @@ class Product(models.Model):
     date = models.DateField()
     image = models.CharField(max_length=64, default="")
     category = models.CharField(max_length=30, null = True)
-    seller = models.ForeignKey(User, on_delete= models.CASCADE, related_name="productos" )
+    seller = models.ForeignKey(User, on_delete= models.CASCADE, related_name="sales" )
+    active = models.BooleanField(default=True)
+    winner = models.ForeignKey(User, on_delete= models.CASCADE, related_name="purchases", null=True)
+
     def __str__(self) -> str:
         return f"{self.name} - Price: ${self.price}"
+    
+    def mayorBid(self):
+        bids = self.bids.all().order_by('-bid')
+        if bids:    
+            return bids[0]
+        else: return None
+    
+    def deactivate(self):
+        self.active = False
+        self.save()
+
+    def closeAuction(self):
+        mayor_bid = self.mayorBid()
+        if mayor_bid:
+            self.winner = mayor_bid.user
+            self.save()
+        self.deactivate()
 
 
 class Bid(models.Model):
@@ -27,6 +48,10 @@ class Bid(models.Model):
     date = models.DateField(null=True)
     def __str__(self) -> str:
         return f"{self.user.username} - Product: ${self.product.name} - Bid: ${self.bid}"
+    
+    def daysSinceBid(self):
+        return datetime.today() - self.date
+
 
 
 class Comments(models.Model):

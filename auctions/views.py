@@ -12,7 +12,7 @@ from .forms  import NewProductForm
 
 def index(request):
     return render(request, "auctions/index.html", {
-        "products": Product.objects.all()
+        "products": Product.objects.filter(active = True)
     })
 
 
@@ -102,6 +102,10 @@ def showListing(request, listing_id):
         user =  User.objects.get(username= request.user)
         # Taking listing info
         listing = Product.objects.get(pk= listing_id)
+        is_owner = False
+        # Is user the seller?
+        if user.pk == listing.seller.pk:
+            is_owner = True
 
         # Is the listing included in user's watchlist?
         try:
@@ -117,19 +121,25 @@ def showListing(request, listing_id):
             })
 
     # Taking bids info
-    bids = Bid.objects.filter(product= listing)
+    
+    bids = Bid.objects.filter(product= listing).order_by('-bid')
+    mayor_bid = listing.price
+    if bids:
+        mayor_bid = bids[0].bid
 
     if request.method == 'GET':
         
         return render(request,"auctions/listingPage.html",{
             "listing": listing,
             "item_in_watchlist": item_in_watchlist,
+            "mayor_bid": mayor_bid+0.1, 
             "item_bids": bids,
+            "is_owner": is_owner,
             "message": message
 
         } )
     else:
-        if request.POST['addToWatchlist']:
+        if 'addToWatchlist' in request.POST:
             if watchlist:
                 watchlist.listings.add(listing) 
             else:
@@ -137,22 +147,40 @@ def showListing(request, listing_id):
                 watchlist.save()
                 watchlist.listings.add(listing)
                 watchlist.save()
-
-            return render(request,"auctions/listingPage.html",{
-                "listing": listing,
-                "item_in_watchlist": True,
-                "item_bids": bids,
-                "message": message
-
-                } )
-        if request.POST['removeFWatchlist']:
+            return HttpResponseRedirect(reverse("listing", args=[listing_id]))
+            
+        if 'removeFWatchlist' in request.POST:
             watchlist.listings.remove(listing)
-            return render(request,"auctions/listingPage.html",{
-                "listing": listing,
-                "item_in_watchlist": False,
-                "item_bids": bids,
-                "message": message
+            return HttpResponseRedirect(reverse("listing", args=[listing_id]))
+        
+        if 'closeAuction' in request.POST:
+            # Closing auction
+            # make the highest bidder the winner of the auction 
+            # makes the listing no longer active
+            listing.closeAuction()
+            return HttpResponseRedirect(reverse("index"))
 
-                } )
-
+            
+        
+def newBid (request, listing_id):
+    if request.method == 'POST':
+        try:
+            user =  User.objects.get(username= request.user)
+            # Taking listing info
+            listing = Product.objects.get(pk= listing_id)
+        
+            bidAmount = float(request.POST["bidAmount"])
+            isvalid = False
+            mayor_bid = listing.mayorBid()
+            if mayor_bid and bidAmount > mayor_bid or bidAmount > listing.price:
+                isvalid= True
+            if isvalid:
+                # Create nuevo bid
+                newBid = Bid(user= user, product = listing, bid = bidAmount, date= datetime.now())
+                newBid.save()
+                return HttpResponseRedirect(reverse("listing", args=listing_id))
+            
+            
+        except Exception as e:
+            return HttpResponseRedirect(reverse("listing", args=[listing_id]))
 
