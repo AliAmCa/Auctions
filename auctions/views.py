@@ -5,10 +5,9 @@ from django.db import IntegrityError
 from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import render, redirect
 from django.urls import reverse
-from .models import Product
+from .models import Product, User, WatchList, Bid, Comments
 from .forms  import NewProductForm
 
-from .models import User
 
 
 def index(request):
@@ -98,10 +97,62 @@ def newProduct(request):
         })
     
 def showListing(request, listing_id):
-    listing = Product.objects.get(pk= listing_id)
-    
-    return render(request,"auctions/listingPage.html",{
-        "listing": listing
-    } )
-    
+    message = ''
+    try:
+        user =  User.objects.get(username= request.user)
+        # Taking listing info
+        listing = Product.objects.get(pk= listing_id)
+
+        # Is the listing included in user's watchlist?
+        try:
+            watchlist = WatchList.objects.get(owner = user)
+            item_in_watchlist = watchlist.listings.filter(pk= listing.pk)
+        except:
+            watchlist = None
+            item_in_watchlist= None
+    except Exception as e:
+        message = e
+        return render(request,"auctions/listingPage.html",{
+                "message": message
+            })
+
+    # Taking bids info
+    bids = Bid.objects.filter(product= listing)
+
+    if request.method == 'GET':
+        
+        return render(request,"auctions/listingPage.html",{
+            "listing": listing,
+            "item_in_watchlist": item_in_watchlist,
+            "item_bids": bids,
+            "message": message
+
+        } )
+    else:
+        if request.POST['addToWatchlist']:
+            if watchlist:
+                watchlist.listings.add(listing) 
+            else:
+                watchlist = WatchList(owner= user)
+                watchlist.save()
+                watchlist.listings.add(listing)
+                watchlist.save()
+
+            return render(request,"auctions/listingPage.html",{
+                "listing": listing,
+                "item_in_watchlist": True,
+                "item_bids": bids,
+                "message": message
+
+                } )
+        if request.POST['removeFWatchlist']:
+            watchlist.listings.remove(listing)
+            return render(request,"auctions/listingPage.html",{
+                "listing": listing,
+                "item_in_watchlist": False,
+                "item_bids": bids,
+                "message": message
+
+                } )
+
 

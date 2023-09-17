@@ -24,6 +24,7 @@ class Bid(models.Model):
     user = models.ForeignKey(User, on_delete= models.CASCADE, related_name="bids" )
     product = models.ForeignKey(Product, on_delete= models.CASCADE, related_name="bids")
     bid = models.FloatField()
+    date = models.DateField(null=True)
     def __str__(self) -> str:
         return f"{self.user.username} - Product: ${self.product.name} - Bid: ${self.bid}"
 
@@ -32,3 +33,7 @@ class Comments(models.Model):
     author = models.ForeignKey(User, on_delete= models.CASCADE, related_name="comments" )
     product = models.ForeignKey(Product, on_delete= models.CASCADE, related_name="comments")
     comment = models.TextField(max_length=200)
+
+class WatchList(models.Model):
+    owner = models.ForeignKey(User, on_delete= models.CASCADE, related_name="watchlist" )
+    listings = models.ManyToManyField(Product, blank=True, related_name="listings")

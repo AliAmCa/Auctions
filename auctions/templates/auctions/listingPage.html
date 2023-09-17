@@ -4,6 +4,11 @@
 {% endblock %}
 
 {% block body %}
+    {% if message %}
+    <div>{{ message }}</div>
+    {% endif %}
+    
+    {% if listing %}
    <main class="container mt-5">
         <div class="row">
             <div class="col-md-5">
@@ -15,20 +20,49 @@
             <div class="col-md-7">
                 <h1>{{ listing.name }}</h1>
                 <p>{{ listing.description }}</p>
-                <p>Current Price: ${{ listing.price }} </p>
+                <p>Start Price: ${{ listing.price }} </p>
                 <p>Created on {{listing.date}}</p>
                 {% if user.is_authenticated %}
-                    <input type="submit" value="Add to Watchlist">
+                    
+                        <form class="row text-center" action="{% url 'listing' listing.id %}" method="post">
+                            {% csrf_token %}
+
+                        {% if item_in_watchlist %}
+                            <input id="removeFWatchlist" name="removeFWatchlist" type="submit" value="Remove from Watchlist" class="btn btn-danger col col-md-6">
+                        {% else %}
+                            <input id="addToWatchlist" name="addToWatchlist" type="submit" value="Add to Watchlist" class="btn btn-info col col-md-6">
+                        {% endif %}
+                        </form>
+                    
                 {% else %}
-                    Not signed in.
+                    Sign to make a bid
                 {% endif %}
-
-
             </div>
 
+        </div> 
+        <!-- !ROW -->
+        <div class="row mt-5 text-center justify-content-around border border-info p-3">
+            <div class="col-md-4 text-center">
+                {% if item_bids %}
+                    {% for bid  in item_bids %}
+                        <p>{{bid.date}}: ${{ bid.bid }}</p>
+                    {% endfor %}
+
+                {% else %}
+                    <p>No current bids</p>
+                {% endif %}
+            </div>
+            
+            
+            <div class="input-group mb-3 col-md-4 text-center">
+                <span class="input-group-text">$</span>
+                <input type="number" class="form-control" placeholder="Amount" min="{{ mayor_bid }}">
+                <button id="bidSubmit" name="bidSubmit" type="submit" class="btn btn-success ml-3">Make a bid</button>
+            </div>
         </div>
 
    </main>
+   {% endif %}
 
 
 {% endblock %}
