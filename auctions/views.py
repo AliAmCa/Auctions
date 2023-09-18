@@ -96,16 +96,19 @@ def newProduct(request):
             'new_product_form': newProductForm
         })
     
-def showListing(request, listing_id):
-    message = ''
+def showListing(request, listing_id,  message ):
+    if message== 'None':
+        message= ""
     item_in_watchlist= None
     user_is_winner = False
     is_owner = False
+    comments = []
 
     try:
          # Taking listing info
         listing = Product.objects.get(pk= listing_id)
         mayor_bid = listing.price
+        comments = listing.getComments()
 
         try:
             user =  User.objects.get(username= request.user)
@@ -122,9 +125,6 @@ def showListing(request, listing_id):
                 watchlist = None
         except:
             user = None
-
-       
-       
         
         # IF Listing is ACTIVE 
         if listing.active:
@@ -155,11 +155,29 @@ def showListing(request, listing_id):
             "item_bids": bids,
             "is_owner": is_owner,
             "user_winner": user_is_winner,
+            "comments": comments,
             "message": message
 
         } )
-    else:
+    
+
+def listingActions(request, listing_id):
+    if request.method == 'POST':
+        try:
+            # User info
+            user =  User.objects.get(username= request.user)
+            # Taking listing info
+            listing = Product.objects.get(pk= listing_id)
+            try:
+                watchlist = WatchList.objects.get(owner = user)
+            except:
+                watchlist = None
+        except:
+            message = 'Ups! Something happened. Try again in a few minutes!'
+
         if 'addToWatchlist' in request.POST: # Add the listing to user´s watchlist
+            message = 'Listing added to Watchlist'
+
             if watchlist:
                 watchlist.listings.add(listing) 
             else:
@@ -167,18 +185,17 @@ def showListing(request, listing_id):
                 watchlist.save()
                 watchlist.listings.add(listing)
                 watchlist.save()
-            return HttpResponseRedirect(reverse("listing", args=[listing_id]))
             
         if 'removeFWatchlist' in request.POST: # Remove listing from user´s watchlist
+            message = 'Listing removed from Watchlist'
             watchlist.listings.remove(listing)
-            return HttpResponseRedirect(reverse("listing", args=[listing_id]))
         
         if 'closeAuction' in request.POST:  # Closing auction
-           
+            message = "Auction closed"
             # make the highest bidder the winner of the auction 
             # makes the listing no longer active
             listing.closeAuction()
-            return HttpResponseRedirect(reverse("index"))
+        return HttpResponseRedirect(reverse("listing", args=[listing_id, message]))
 
             
         
@@ -191,18 +208,40 @@ def newBid (request, listing_id):
         
             bidAmount = float(request.POST["bidAmount"])
             isvalid = False
-            mayor_bid = listing.mayorBid().bid
-            if mayor_bid and bidAmount > mayor_bid or bidAmount >= listing.price:
+            
+            mayor_bid = listing.mayorBid()
+            
+
+            if mayor_bid and bidAmount > mayor_bid.bid or bidAmount >= listing.price:
                 isvalid= True
             if isvalid:
                 # Create nuevo bid
                 newBid = Bid(user= user, product = listing, bid = bidAmount, date= datetime.now())
                 newBid.save()
-                return HttpResponseRedirect(reverse("listing", args=[listing_id]))
-            
-            
+                message = 'Bid done!'
+            else:
+                message = 'Sorry! You must make a better bid'    
         except Exception as e:
-            return HttpResponseRedirect(reverse("listing", args=[listing_id]))
+            print(e)
+            message = 'Ups! Something happened. Try again in a few minutes!'
+        return HttpResponseRedirect(reverse("listing", args=[listing_id, message]))
 
 def newComment(request, listing_id):
-    pass
+    if request.method == 'POST':
+        try:
+            user =  User.objects.get(username= request.user)
+            # Taking listing info
+            listing = Product.objects.get(pk= listing_id)
+            usercomment = request.POST["userComment"]
+            if usercomment:
+                newComment = Comments(author= user, product= listing, comment= usercomment)
+                newComment.save()
+                message= 'Comment saved'
+            else:
+                message = 'Comments should have some letters at least'
+            
+        except Exception as e:
+            print(e)
+            message = 'Ups! Something happened. Try again in a few minutes!'
+        
+        return HttpResponseRedirect(reverse("listing", args=[listing_id, message]))

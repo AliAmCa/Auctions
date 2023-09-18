@@ -18,16 +18,17 @@ class Product(models.Model):
     category = models.CharField(max_length=30, null = True)
     seller = models.ForeignKey(User, on_delete= models.CASCADE, related_name="sales" )
     active = models.BooleanField(default=True)
-    winner = models.ForeignKey(User, on_delete= models.CASCADE, related_name="purchases", null=True)
+    winner = models.ForeignKey(User, on_delete= models.CASCADE, related_name="purchases", null=True, blank=True)
 
     def __str__(self) -> str:
         return f"{self.name} - Price: ${self.price}"
     
     def mayorBid(self):
+        
         bids = self.bids.all().order_by('-bid')
-        if bids:    
-            return bids[0]
-        else: return None
+        if bids:
+                return bids[0]
+        else: return []
     
     def deactivate(self):
         self.active = False
@@ -39,6 +40,9 @@ class Product(models.Model):
             self.winner = mayor_bid.user
             self.save()
         self.deactivate()
+
+    def getComments(self):
+        return self.comments.all()
 
 
 class Bid(models.Model):
@@ -58,6 +62,7 @@ class Comments(models.Model):
     author = models.ForeignKey(User, on_delete= models.CASCADE, related_name="comments" )
     product = models.ForeignKey(Product, on_delete= models.CASCADE, related_name="comments")
     comment = models.TextField(max_length=200)
+    date = models.DateField(default=datetime.now())
 
 class WatchList(models.Model):
     owner = models.ForeignKey(User, on_delete= models.CASCADE, related_name="watchlist" )

@@ -1,0 +1,13 @@
+#user{
+    font-size: bold;
+    padding: 3px;
+    margin: 5px;
+    height: fit-content;
+}
+
+.comments  #userComment{
+    font-size: bold;
+}
+.navbar a{
+    text-decoration: none;
+}

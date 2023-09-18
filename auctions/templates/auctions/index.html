@@ -20,7 +20,7 @@ Auctions
                             <p>{{ item.description }}</p>
                             <p>Price: ${{ item.price }} </p>
                             <p>Created {{item.date}}</p>
-                            <a href="{% url 'listing' item.id %}" class="btn btn-primary btn-block"> Info </a>
+                            <a href="{% url 'listing' item.id  None %}" class="btn btn-primary btn-block"> Info </a>
                         </div>
                     </div>
                 </div>

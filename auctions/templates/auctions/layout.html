@@ -6,6 +6,8 @@
         <title>{% block title %}{% endblock %}</title>
         <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
         <link href="{% static 'auctions/styles.css' %}" rel="stylesheet">
+        <link href="{% static 'auctions/listing.css' %}" rel="stylesheet">
+
     </head>
     <body>
         <header>
@@ -20,19 +22,41 @@
                         {% endif %}
                     </div>
                     <div class="col-md-8">
-                        <nav class="mt-5 mt-md-0 nav justify-content-center justify-content-md-end">
-                            <a class="nav-link" href="{% url 'index' %}">Active Listings</a>
-                            <a class="nav-link" href="{% url 'index' %}">Categories</a>
-                            {% if user.is_authenticated %}
-                                <a class="nav-link" href="{% url 'index' %}">Watchlist</a>
-                                <a class="nav-link" href="{% url 'new' %}">Create Listing</a>
-                                <a class="nav-link" href="{% url 'logout' %}">Log Out</a>
-                            {% else %}
-                                <a class="nav-link" href="{% url 'login' %}">Log In</a>
-                                <a class="nav-link" href="{% url 'register' %}">Register</a>
-                            {% endif %}
-                            
-                        </nav>
+                       
+                        <nav class="navbar navbar-expand-lg bg-body-tertiary">
+                            <div class="container-fluid">
+                              <a class="navbar-brand" href="{% url 'index' %}">Active Listings</a>
+                              <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                                <span class="navbar-toggler-icon"></span>
+                              </button>
+                              
+                              <div class="collapse navbar-collapse" id="navbarNav">
+                                <ul class="navbar-nav">
+                                    {% if user.is_authenticated %}
+                                        <li class="nav-item">
+                                            <a class="nav-link active" aria-current="page" href="{% url 'index' %}">Watchlist</a>
+                                        </li>
+                                        <li class="nav-item">
+                                            <a class="nav-link active" aria-current="page" href="{% url 'new' %}">Create Listing</a>
+                                        </li>
+                                        <li class="nav-item">
+                                            <a class="nav-link" href="{% url 'logout' %}">Log Out</a>
+                                        </li>
+                                    {% else %}
+
+                                        <li class="nav-item">
+                                            <a class="nav-link" href="{% url 'login' %}">Log In</a>
+                                        </li>
+                                        <li class="nav-item">
+                                            <a class="nav-link" href="{% url 'register' %}">Register</a>
+                                        </li>
+
+                                        
+                                    {% endif %}
+                                </ul>
+                              </div>
+                            </div>
+                          </nav>
                     </div>
                 </div>
             </div>

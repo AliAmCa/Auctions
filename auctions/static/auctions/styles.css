@@ -9,3 +9,7 @@ body {
 #bidSubmit{
     height: fit-content;
 }
+
+#user{
+    font-size: bold;
+}
