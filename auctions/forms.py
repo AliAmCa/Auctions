@@ -3,7 +3,7 @@ from .models import Category
 categories = []
 result = Category.objects.all()
 for item in result:
-    categories.append(item.name)
+    categories.append((item.pk , item.name))
 
 class NewProductForm(forms.Form):
     title = forms.CharField(label= 'Title',widget=forms.TextInput(attrs={'name':'title', 'class':'form-control'}))

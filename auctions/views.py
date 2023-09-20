@@ -5,7 +5,7 @@ from django.db import IntegrityError
 from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import render, redirect
 from django.urls import reverse
-from .models import Product, User, WatchList, Bid, Comments
+from .models import Product, User, WatchList, Bid, Comments, Category
 from .forms  import NewProductForm, categories
 
 
@@ -77,7 +77,7 @@ def newProduct(request):
             description = request.POST['description']
             startBid = float(request.POST['initialPrice'])
             image = request.POST['image']
-            category = request.POST['category']
+            category = Category.objects.get(pk= int(request.POST['category']))
             seller = User.objects.get(username= request.user)
             today = datetime.now()
             product = Product(name= title, description= description, 
@@ -266,9 +266,12 @@ def watchlistView(request):
 def categoriesView(request, category_id = 0):
     if category_id != 0:
         # Search for the products with that category
+        category = Category.objects.get(pk = category_id)
+        products = category.products.all()
 
-        pass
+        
     return render(request, "auctions/categories.html",{
-        "categories": categories
+        "categories": categories,
+        "products": products
     })
     
