@@ -1,0 +1,30 @@
+{% extends "auctions/layout.html" %}
+{% block title %}
+Auctions
+{% endblock %}
+
+{% block body %}
+    <h2 class="mt-5 text-center">Categories</h2>
+
+    
+    <div class="container mt-5 ">
+        <div class="row">
+            
+            <div class="col-3">
+                {% for category in categories %}
+                    <ul class="list-group">
+                        
+                        <li class="list-group-item mt-2">
+                          <a class="" aria-current="page" href="{% url 'categories_id' category.0 %}">{{ category.1 }}</a>
+                        </li>
+                        
+                    </ul>
+                    
+                
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+
+{% endblock %}

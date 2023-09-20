@@ -29,12 +29,12 @@
                               <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
                                 <span class="navbar-toggler-icon"></span>
                               </button>
-                              
+                              <a class="nav-link active" aria-current="page" href="{% url 'categories'  %}">Categories</a>
                               <div class="collapse navbar-collapse" id="navbarNav">
                                 <ul class="navbar-nav">
                                     {% if user.is_authenticated %}
                                         <li class="nav-item">
-                                            <a class="nav-link active" aria-current="page" href="{% url 'index' %}">Watchlist</a>
+                                            <a class="nav-link active" aria-current="page" href="{% url 'watchlist' %}">Watchlist</a>
                                         </li>
                                         <li class="nav-item">
                                             <a class="nav-link active" aria-current="page" href="{% url 'new' %}">Create Listing</a>

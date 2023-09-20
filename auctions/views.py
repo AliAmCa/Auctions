@@ -6,7 +6,7 @@ from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import render, redirect
 from django.urls import reverse
 from .models import Product, User, WatchList, Bid, Comments
-from .forms  import NewProductForm
+from .forms  import NewProductForm, categories
 
 
 
@@ -245,3 +245,30 @@ def newComment(request, listing_id):
             message = 'Ups! Something happened. Try again in a few minutes!'
         
         return HttpResponseRedirect(reverse("listing", args=[listing_id, message]))
+
+@login_required
+def watchlistView(request):
+    message= ""
+    watchlist= []
+    try:
+        user = User.objects.get(username= request.user)
+        watchlist = user.getWatchlist()
+
+    except:
+        message = 'Ups! Something happened. Try again in a few minutes!'
+
+    return render(request, "auctions/watchlist.html", {
+        "products": watchlist,
+        "message": message
+
+    })
+
+def categoriesView(request, category_id = 0):
+    if category_id != 0:
+        # Search for the products with that category
+
+        pass
+    return render(request, "auctions/categories.html",{
+        "categories": categories
+    })
+    

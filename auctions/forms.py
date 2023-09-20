@@ -1,6 +1,10 @@
 from django import forms
+from .models import Category
+categories = []
+result = Category.objects.all()
+for item in result:
+    categories.append(item.name)
 
-categories = [('1','Fashion'), ('2','Toys'), ('3','Electronics'), ('4','Home'),('5', 'Sport')]
 class NewProductForm(forms.Form):
     title = forms.CharField(label= 'Title',widget=forms.TextInput(attrs={'name':'title', 'class':'form-control'}))
     description = forms.CharField(label= 'Description',max_length=200, widget=forms.Textarea(attrs={'name':'description', 'rows':3, 'cols':5, 'class':'form-control'}))

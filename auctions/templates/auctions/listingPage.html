@@ -213,7 +213,7 @@
         </div>
         <!-- //ROW COMMENST AND BIDS -->
 
-        <div class="row text-center justify-content-center m">  
+        <div class="row text-center justify-content-center mt-5">  
             {% if user.is_authenticated %}
             <form action="{% url 'newComment' listing.id %}" method="post" class="col-10 input-group-text mb-3  text-center ">
                 {% csrf_token %}

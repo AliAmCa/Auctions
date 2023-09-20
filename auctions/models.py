@@ -4,9 +4,20 @@ from datetime import datetime
 
 
 class User(AbstractUser):
-    pass
+    
+    def getWatchlist(self):
 
+        try:
+            watchlist = self.watchlist.all().first()
+            return watchlist.listings.all()
+        except:
+            return []
 
+class Category(models.Model):
+    name = models.CharField(max_length=30)
+
+    def __str__(self) -> str:
+        return f"{self.name}"
 
 
 class Product(models.Model):
@@ -14,8 +25,8 @@ class Product(models.Model):
     description = models.CharField(max_length=200, null = True)
     price = models.FloatField()
     date = models.DateField()
-    image = models.CharField(max_length=64, default="")
-    category = models.CharField(max_length=30, null = True)
+    image = models.CharField(max_length=64, default="", blank=True, null= True)
+    category = models.ForeignKey(Category, on_delete= models.CASCADE, related_name="products", blank=True, null=True)
     seller = models.ForeignKey(User, on_delete= models.CASCADE, related_name="sales" )
     active = models.BooleanField(default=True)
     winner = models.ForeignKey(User, on_delete= models.CASCADE, related_name="purchases", null=True, blank=True)
@@ -62,8 +73,14 @@ class Comments(models.Model):
     author = models.ForeignKey(User, on_delete= models.CASCADE, related_name="comments" )
     product = models.ForeignKey(Product, on_delete= models.CASCADE, related_name="comments")
     comment = models.TextField(max_length=200)
-    date = models.DateField(default=datetime.now())
+    date = models.DateField(blank= True)
 
 class WatchList(models.Model):
     owner = models.ForeignKey(User, on_delete= models.CASCADE, related_name="watchlist" )
-    listings = models.ManyToManyField(Product, blank=True, related_name="listings")
+    listings = models.ManyToManyField(Product, blank=True, related_name="watchlist")
+        
+    def __str__(self) -> str:
+        return f"{self.owner.username} - Products: {len(self.listings.all())}"
+    
+    
+        
