@@ -103,11 +103,12 @@ def showListing(request, listing_id,  message ):
     user_is_winner = False
     is_owner = False
     comments = []
+    bids_number = 0
+    current_bid = None
 
     try:
          # Taking listing info
         listing = Product.objects.get(pk= listing_id)
-        mayor_bid = listing.price
         comments = listing.getComments()
 
         try:
@@ -132,9 +133,10 @@ def showListing(request, listing_id,  message ):
             bids = Bid.objects.filter(product= listing).order_by('-bid')
             
             if bids:
-                mayor_bid = bids[0].bid
+                bids_number= len(bids)
+                current_bid = bids[0]
         else:
-            bids = None
+            bids = []
             # user is winner?
             if user and listing.winner and user.id == listing.winner.id:
                 user_is_winner= True
@@ -151,8 +153,8 @@ def showListing(request, listing_id,  message ):
         return render(request,"auctions/listingPage.html",{
             "listing": listing,
             "item_in_watchlist": item_in_watchlist,
-            "mayor_bid": mayor_bid, 
-            "item_bids": bids,
+            "bids_number": bids_number, 
+            "current_bid": current_bid,
             "is_owner": is_owner,
             "user_winner": user_is_winner,
             "comments": comments,
@@ -200,24 +202,24 @@ def listingActions(request, listing_id):
             
         
 def newBid (request, listing_id):
+    isvalid = False
     if request.method == 'POST':
         try:
             user =  User.objects.get(username= request.user)
             # Taking listing info
             listing = Product.objects.get(pk= listing_id)
-        
-            bidAmount = float(request.POST["bidAmount"])
-            isvalid = False
-            
-            mayor_bid = listing.mayorBid()
-            
+            try:
+                bidAmount = float(request.POST["bidAmount"])
+                if bidAmount >  listing.price:
+                    isvalid= True
+            except:
+                message = "You must make a valid bid"
 
-            if mayor_bid and bidAmount > mayor_bid.bid or bidAmount >= listing.price:
-                isvalid= True
             if isvalid:
                 # Create nuevo bid
                 newBid = Bid(user= user, product = listing, bid = bidAmount, date= datetime.now())
                 newBid.save()
+                listing.newBid(bidAmount)
                 message = 'Bid done!'
             else:
                 message = 'Sorry! You must make a better bid'    
@@ -234,7 +236,7 @@ def newComment(request, listing_id):
             listing = Product.objects.get(pk= listing_id)
             usercomment = request.POST["userComment"]
             if usercomment:
-                newComment = Comments(author= user, product= listing, comment= usercomment)
+                newComment = Comments(author= user, product= listing, comment= usercomment, date = datetime.now())
                 newComment.save()
                 message= 'Comment saved'
             else:
@@ -264,14 +266,16 @@ def watchlistView(request):
     })
 
 def categoriesView(request, category_id = 0):
+    products = []
     if category_id != 0:
         # Search for the products with that category
         category = Category.objects.get(pk = category_id)
-        products = category.products.all()
+        products = category.getActiveListings()
 
         
     return render(request, "auctions/categories.html",{
         "categories": categories,
-        "products": products
+        "products": products,
+        "category_id": category_id
     })
     

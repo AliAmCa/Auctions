@@ -18,14 +18,18 @@ class Category(models.Model):
 
     def __str__(self) -> str:
         return f"{self.name}"
+    
+    def getActiveListings(self):
+        return self.products.all().filter(active = True)
+
 
 
 class Product(models.Model):
     name = models.CharField(max_length=64)
-    description = models.CharField(max_length=200, null = True)
+    description = models.CharField(max_length=400, null = True)
     price = models.FloatField()
     date = models.DateField()
-    image = models.CharField(max_length=64, default="", blank=True, null= True)
+    image = models.URLField( default="", blank=True, null= True)
     category = models.ForeignKey(Category, on_delete= models.CASCADE, related_name="products", blank=True, null=True)
     seller = models.ForeignKey(User, on_delete= models.CASCADE, related_name="sales" )
     active = models.BooleanField(default=True)
@@ -33,6 +37,10 @@ class Product(models.Model):
 
     def __str__(self) -> str:
         return f"{self.name} - Price: ${self.price}"
+    
+    def newBid(self, bid):
+        self.price = bid
+        self.save()
     
     def mayorBid(self):
         

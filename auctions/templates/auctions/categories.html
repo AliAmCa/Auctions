@@ -43,6 +43,14 @@ Auctions
                         </div>
                     {% endfor %}
                 </div>
+                {% else %}
+                    {%if category_id != 0%}
+                        <div class="alert alert-info text-center" role="alert">
+                            
+                            No active listings in this category
+                            
+                        </div>
+                    {% endif %}
                 {% endif %}
             </div>
         </div>
